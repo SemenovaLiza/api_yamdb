@@ -1,14 +1,13 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
-from rest_framework import permissions
-from rest_framework import views, viewsets, status, filters
+from rest_framework import views, viewsets, status, filters, permissions
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework_simplejwt.tokens import AccessToken
 
-from users.models import CustomUser
+from reviews.models import CustomUser
 from .permissions import IsAdmin, IsAuthor
 from .serializers import (AdminSerializer, CustomUserSerializer,
                           SignUpSerializer, TokenSerializer)
@@ -24,7 +23,7 @@ class CustomUserViewSet(viewsets.ModelViewSet):
     pagination_class = PageNumberPagination
 
     @action(
-        methods=['get', 'retrieve', 'patch'],
+        methods=['retrieve', 'patch'],
         detail=True, url_path='me'
     )
     def get_user_profile(request):

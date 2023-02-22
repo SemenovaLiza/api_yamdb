@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from users.models import CustomUser
+from reviews.models import CustomUser
 from api_yamdb.settings import USERNAME_MAX_LENGTH
 
 
@@ -16,7 +16,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
         model = CustomUser
 
 
-# сериализатор для назанчения ролей пользователям
+# сериализатор для назначения ролей пользователям
 class AdminSerializer(serializers.ModelSerializer):
     class Meta:
         fields = (
@@ -28,7 +28,9 @@ class AdminSerializer(serializers.ModelSerializer):
 
 
 class SignUpSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(max_length=USERNAME_MAX_LENGTH)
+    username = serializers.CharField(
+        max_length=USERNAME_MAX_LENGTH, required=True
+    )
     email = serializers.EmailField(required=True)
 
     def validate(self, data):
