@@ -4,7 +4,6 @@ from reviews.models import CustomUser
 from api_yamdb.settings import USERNAME_MAX_LENGTH
 
 
-# сериалиатор для обычного пользователя
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         fields = (
@@ -16,7 +15,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
         model = CustomUser
 
 
-# сериализатор для назначения ролей пользователям
 class AdminSerializer(serializers.ModelSerializer):
     class Meta:
         fields = (

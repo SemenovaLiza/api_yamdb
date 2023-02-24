@@ -13,7 +13,6 @@ from .serializers import (AdminSerializer, CustomUserSerializer,
                           SignUpSerializer, TokenSerializer)
 
 
-# данные пользователя
 class CustomUserViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
@@ -73,12 +72,13 @@ class SignUpView(views.APIView):
 
 
 class GetTokenView(views.APIView):
+    permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
         serializer = TokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = get_object_or_404(
-            CustomUser, username=serializer.validate_data['username']
+            CustomUser, username=serializer.validated_data['username']
         )
         if default_token_generator.check_token(
             user, serializer.validated_data["confirmation_code"]
