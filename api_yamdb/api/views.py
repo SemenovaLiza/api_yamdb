@@ -7,10 +7,10 @@ from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework_simplejwt.tokens import AccessToken
 
-from reviews.models import CustomUser
+from reviews.models import CustomUser, Title
 from .permissions import IsAdmin, IsAuthor
 from .serializers import (AdminSerializer, CustomUserSerializer,
-                          SignUpSerializer, TokenSerializer)
+                          SignUpSerializer, TokenSerializer, ReviewSerializer)
 
 
 class CustomUserViewSet(viewsets.ModelViewSet):
@@ -86,3 +86,18 @@ class GetTokenView(views.APIView):
             token = AccessToken.for_user(user)
             return Response({'token': str(token)}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    serializer_class = ReviewSerializer
+    pagination_class = PageNumberPagination
+
+    def get_title(self):
+        return get_object_or_404(Title, pk=self.kwargs['title_id'])
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user, title=self.get_title())
+
+    def get_queryset(self):
+        return self.get_title().reviews.all()
+
