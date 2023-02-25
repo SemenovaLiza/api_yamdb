@@ -1,13 +1,8 @@
 from django.urls import include, path
-
-from . import views
 from rest_framework.routers import SimpleRouter
 
-from .views import (CategoryViewSet,
-                    GenreViewSet,
-                    TitleViewSet,
-                    CustomUserViewSet,
-                    ReviewViewSet)
+from . import views
+
 
 v1_router = SimpleRouter()
 v1_router.register('titles', TitleViewSet, basename='titles')
@@ -16,6 +11,9 @@ v1_router.register('genres', GenreViewSet, basename='genres')
 v1_router.register('users', CustomUserViewSet, basename='users')
 v1_router.register(r'titles/(?P<title_id>\d+)/reviews', ReviewViewSet,
                    basename='reviews')
+router_v1.register(
+    r'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
+    CommentViewSet, basename='comments')
 
 urlpatterns = [
     path('v1/', include(v1_router.urls)),

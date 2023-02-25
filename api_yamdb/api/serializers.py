@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from reviews.models import Title, Category, Genre, CustomUser, Review
+
+from reviews.models import Title, Category, Genre, CustomUser, Review, Comment
 from api_yamdb.settings import USERNAME_MAX_LENGTH
 
 
@@ -45,6 +46,27 @@ class TitleSerializerGet(serializers.ModelSerializer):
         fields = (
             'id', 'name', 'year', 'description', 'genre', 'category'
         )
+        
+class ReviewSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        read_only=True, slug_field='username')
+    score = serializers.IntegerField(min_value=1, max_value=10)
+
+    class Meta:
+        model = Review
+        fields = ('id', 'text', 'author', 'score', 'pub_date',)
+        read_only_fields = ('id', 'author', 'pub_date',)
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        read_only=True, slug_field='username')
+
+    class Meta:
+        model = Comment
+        fields = ('id', 'text', 'author', 'pub_date',)
+        read_only_fields = ('id', 'author', 'pub_date',)
+
 
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -87,14 +109,3 @@ class SignUpSerializer(serializers.ModelSerializer):
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=USERNAME_MAX_LENGTH)
     confirmation_code = serializers.CharField(max_length=300)
-
-
-class ReviewSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(
-        read_only=True, slug_field='username')
-    score = serializers.IntegerField(min_value=1, max_value=10)
-
-    class Meta:
-        model = Review
-        fields = ('id', 'text', 'author', 'score', 'pub_date',)
-        read_only_fields = ('id', 'author', 'pub_date',)
