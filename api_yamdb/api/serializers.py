@@ -1,5 +1,3 @@
-from math import floor
-
 from rest_framework import serializers
 from django.db.models import Avg
 
@@ -41,7 +39,7 @@ class TitleSerializerPost(serializers.ModelSerializer):
         slug_field = 'slug'
 
     def get_rating(self, obj):
-        return floor(obj.reviews.aggregate(Avg('score ')))
+        return round(obj.reviews.aggregate(Avg('score ')))
 
 
 class TitleSerializerGet(serializers.ModelSerializer):
@@ -56,7 +54,7 @@ class TitleSerializerGet(serializers.ModelSerializer):
         )
 
     def get_rating(self, obj):
-        return floor(obj.reviews.aggregate(Avg('score ')))
+        return round(obj.reviews.aggregate(Avg('score ')))
 
 
 class ReviewSerializer(serializers.ModelSerializer):
