@@ -19,8 +19,8 @@ class Title(models.Model):
     category = models.ForeignKey(
         'Category',
         on_delete=models.SET_NULL,
-        null=False,
-        blank=False,
+        null=True,
+        blank=True,
         related_name='category',
         verbose_name='Категория',
     )
@@ -54,6 +54,7 @@ class Genre(models.Model):
 
     def __str__(self):
         return self.name
+
 
 ROLES = (
         (ADMIN, 'Администратор'),
@@ -92,7 +93,7 @@ class CustomUser(AbstractUser):
 
 class Review(models.Model):
     author = models.ForeignKey(
-        User,
+        CustomUser,
         on_delete=models.CASCADE,
         related_name='reviews',
     )
@@ -116,7 +117,7 @@ class Review(models.Model):
 class Comment(models.Model):
     text = models.TextField()
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE,
+        CustomUser, on_delete=models.CASCADE,
         related_name='comments'
     )
     pub_date = models.DateTimeField(auto_now_add=True)

@@ -4,19 +4,20 @@ from django.core.mail import send_mail
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework import filters, viewsets, views, viewsets, status, permissions
+from rest_framework import (filters, viewsets, views,
+                            status, permissions)
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 
-
-from reviews.models import Category, Genre, Title, CustomUser, Review, Comment
+from reviews.models import (Category, Genre, Title,
+                            CustomUser, Review)
 from .filters import TitleFilter
 from .permissions import (IsAdminOrReadOnly, IsAdmin,
                           IsAuthor, AuthorOrStaffOrReadOnly)
 from .serializers import (CategorySerializer, GenreSerializer,
                           TitleSerializerGet, TitleSerializerPost,
                           AdminSerializer, CustomUserSerializer,
-                          SignUpSerializer, TokenSerializer, 
+                          SignUpSerializer, TokenSerializer,
                           ReviewSerializer, CommentSerializer)
 
 
@@ -68,7 +69,6 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return self.get_title().reviews.all()
-
 
 
 class CommentViewSet(viewsets.ModelViewSet):
