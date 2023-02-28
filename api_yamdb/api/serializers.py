@@ -1,4 +1,3 @@
-import re
 from rest_framework import serializers
 
 from reviews.models import Title, Category, Genre, CustomUser, Review, Comment
@@ -74,26 +73,13 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class CustomUserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
-        max_length=USERNAME_MAX_LENGTH, required=True)
+        max_length=USERNAME_MAX_LENGTH, required=False)
     email = serializers.EmailField(
-        max_length=EMAIL_MAX_LENGTH, required=True)
+        max_length=EMAIL_MAX_LENGTH, required=False)
     first_name = serializers.CharField(
         max_length=FIRST_NAME_MAX_LENGTH, required=False)
     last_name = serializers.CharField(
         max_length=LAST_NAME_MAX_LENGTH, required=False)
-
-    def validate(self, data):
-        if not re.match(r'^[\w.@+-]+\Z', data['username']):
-            raise serializers.ValidationError(
-                'The username must consist of letters, digits'
-                'and @/./+/-/_ only.')
-        return data
-
-    def username_validation(self, value):
-        if value == 'me':
-            raise serializers.ValidationError(
-                '"me" is invalid username.')
-        return value
 
     class Meta:
         fields = (
@@ -108,23 +94,8 @@ class CustomUserSerializer(serializers.ModelSerializer):
 class AdminSerializer(serializers.ModelSerializer):
     role = serializers.CharField(max_length=13, required=False)
     username = serializers.CharField(
-        max_length=USERNAME_MAX_LENGTH, required=True)
-    email = serializers.EmailField(max_length=EMAIL_MAX_LENGTH, required=True)
-
-    def validate(self, data):
-        if not re.match(r'^[\w.@+-]+\Z', data['username']):
-            raise serializers.ValidationError(
-                'The username must consist of letters, digits'
-                'and @/./+/-/_ only.'
-            )
-        return data
-
-    def username_validation(self, value):
-        if value == 'me':
-            raise serializers.ValidationError(
-                '"me" is invalid username.'
-            )
-        return value
+        max_length=USERNAME_MAX_LENGTH, required=False)
+    email = serializers.EmailField(max_length=EMAIL_MAX_LENGTH, required=False)
 
     class Meta:
         fields = (
@@ -140,16 +111,6 @@ class SignUpSerializer(serializers.ModelSerializer):
         max_length=USERNAME_MAX_LENGTH, required=True
     )
     email = serializers.EmailField(max_length=EMAIL_MAX_LENGTH, required=True)
-
-    def validate(self, data):
-        if data['username'] == 'me':
-            raise serializers.ValidationError(
-                '"me" is invalid username.')
-        if re.match(r'^[\w.@+-]+\Z', data['username']) is None:
-            raise serializers.ValidationError(
-                'The username must consist of letters, digits'
-                'and @/./+/-/_ only.')
-        return data
 
     def validate_username(self, value):
         if CustomUser.objects.filter(username=value).exists():

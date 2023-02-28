@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser
 
 from api_yamdb.settings import (ADMIN, MODERATOR, USER,
                                 USERNAME_MAX_LENGTH, EMAIL_MAX_LENGTH)
-
+from .validators import validate_username
 
 class Title(models.Model):
     name = models.CharField(max_length=256, verbose_name='Название')
@@ -67,7 +67,8 @@ class CustomUser(AbstractUser):
     username = models.CharField(
         max_length=USERNAME_MAX_LENGTH,
         unique=True,
-        blank=False
+        blank=False,
+        validators=[validate_username]
     )
     email = models.EmailField(
         max_length=EMAIL_MAX_LENGTH,

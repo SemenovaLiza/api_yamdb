@@ -5,7 +5,6 @@ from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework import (
     filters, views, viewsets, status, permissions, mixins)
 from rest_framework.pagination import PageNumberPagination
@@ -91,7 +90,8 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 class CustomUserViewSet(
     mixins.CreateModelMixin, mixins.ListModelMixin, mixins.DestroyModelMixin,
-    mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet
+):
     queryset = CustomUser.objects.all()
     serializer_class = AdminSerializer
     permission_classes = (IsAdmin, )
@@ -107,11 +107,6 @@ class CustomUserViewSet(
     )
     def get_user_profile(self, request):
         serializer = CustomUserSerializer(request.user, data=request.data, partial=True)
-        if self.request.user.is_admin:
-            serializer = AdminSerializer(
-                request.user,
-                data=request.data,
-                partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
