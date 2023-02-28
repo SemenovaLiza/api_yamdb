@@ -89,8 +89,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 class CustomUserViewSet(
     mixins.CreateModelMixin, mixins.ListModelMixin, mixins.DestroyModelMixin,
-    mixins.RetrieveModelMixin, viewsets.GenericViewSet
-):
+    mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = AdminSerializer
     permission_classes = (IsAdmin, )
@@ -100,34 +99,20 @@ class CustomUserViewSet(
     lookup_field = 'username'
 
     @action(
-        methods=['GET', 'PATCH'],
-        detail=True, url_path='me',
+        methods=['get', 'patch'],
+        detail=False, url_path='me',
         permission_classes=[permissions.IsAuthenticated]
     )
     def get_user_profile(self, request):
-        if request.method == 'patch':
-            if self.request.user.is_admin:
-                serializer = AdminSerializer(
-                    request.user,
-                    data=request.data,
-                    partial=True)
-            else:
-                serializer = CustomUserSerializer(
-                    request.user,
-                    data=request.data,
-                    partial=True)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.data)
-
-    @action(
-        methods=['GET'],
-        detail=False)
-    def get_users_list(request):
-        users = CustomUser.objects.all()
-        serializer = AdminSerializer(users, many=True)
-        return Response(serializer.data)
+        serializer = CustomUserSerializer(request.user, data=request.data, partial=True)
+        if self.request.user.is_admin:
+            serializer = AdminSerializer(
+                request.user,
+                data=request.data,
+                partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class SignUpView(views.APIView):
@@ -166,6 +151,6 @@ class GetTokenView(views.APIView):
         if default_token_generator.check_token(
             user, serializer.validated_data["confirmation_code"]
         ):
-            token = AccessToken.for_user(user)
+            token = default_token_generator.get_token_for_user(user)
             return Response({'token': str(token)}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
