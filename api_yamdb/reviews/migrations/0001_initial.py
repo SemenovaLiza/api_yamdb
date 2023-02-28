@@ -76,6 +76,7 @@ class Migration(migrations.Migration):
                 ('year', models.IntegerField(verbose_name='Год')),
                 ('slug', models.SlugField(unique=True, verbose_name='slug')),
                 ('description', models.TextField(blank=True, max_length=1000, null=True, verbose_name='Описание')),
+
                 ('category', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='category', to='reviews.category', verbose_name='Категория')),
                 ('genre', models.ManyToManyField(related_name='genre', to='reviews.Genre', verbose_name='Жанр')),
             ],

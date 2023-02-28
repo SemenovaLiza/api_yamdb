@@ -1,17 +1,19 @@
 from django.contrib.auth.tokens import default_token_generator
+from django.db.models import Avg
+from django.db.models.functions import Round
 from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework import (
-    filters, viewsets, views, viewsets, status, permissions, mixins)
+    filters, views, viewsets, status, permissions, mixins)
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 
 
 from reviews.models import (Category, Genre, Title,
-                            CustomUser, Review, Comment)
+                            CustomUser, Review)
 from .filters import TitleFilter
 from .permissions import (IsAdminOrReadOnly, IsAdmin,
                           IsAuthor, AuthorOrStaffOrReadOnly)
@@ -23,7 +25,7 @@ from .serializers import (CategorySerializer, GenreSerializer,
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(rating=Round(Avg('reviews__score')))
     serializer_class = TitleSerializerGet
     permission_classes = (IsAdminOrReadOnly,)
     filterset_class = TitleFilter
