@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from django.db.models import Avg
 
 from reviews.models import Title, Category, Genre, CustomUser, Review, Comment
 from api_yamdb.settings import USERNAME_MAX_LENGTH
@@ -20,7 +19,6 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializerPost(serializers.ModelSerializer):
-    rating = serializers.SerializerMethodField()
     category = serializers.SlugRelatedField(
         queryset=Category.objects.all(),
         slug_field='slug',
@@ -38,23 +36,21 @@ class TitleSerializerPost(serializers.ModelSerializer):
         )
         slug_field = 'slug'
 
-    def get_rating(self, obj):
-        return round(obj.reviews.aggregate(Avg('score ')))
-
 
 class TitleSerializerGet(serializers.ModelSerializer):
-    rating = serializers.SerializerMethodField()
+    rating = serializers.IntegerField(read_only=True)
     category = CategorySerializer()
     genre = GenreSerializer(many=True)
 
     class Meta:
         model = Title
         fields = (
-            'id', 'name', 'year', 'description', 'genre', 'category'
+            'id', 'name', 'year', 'description', 'rating', 'genre', 'category'
         )
 
-    def get_rating(self, obj):
-        return round(obj.reviews.aggregate(Avg('score ')))
+    # def get_rating(self, obj):
+    #     avg_rating = obj.reviews.aggregate(rating=Avg('score')).get('rating')
+    #     return avg_rating
 
 
 class ReviewSerializer(serializers.ModelSerializer):

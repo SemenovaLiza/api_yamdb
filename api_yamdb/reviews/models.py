@@ -7,7 +7,6 @@ from api_yamdb.settings import ADMIN, MODERATOR, USER, USERNAME_MAX_LENGTH
 class Title(models.Model):
     name = models.CharField(max_length=256, verbose_name='Название')
     year = models.IntegerField(verbose_name='Год')
-    slug = models.SlugField(max_length=50, unique=True, verbose_name='slug')
     description = models.TextField(
         max_length=1000, null=True, blank=True, verbose_name='Описание'
     )
@@ -20,7 +19,7 @@ class Title(models.Model):
         'Category',
         on_delete=models.SET_NULL,
         null=True,
-        blank=True,
+        blank=False,
         related_name='category',
         verbose_name='Категория',
     )
