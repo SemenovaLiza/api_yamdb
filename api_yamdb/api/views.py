@@ -6,10 +6,11 @@ from django.core.mail import send_mail
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework import (filters, viewsets, views,
-                            status, permissions)
+from rest_framework import (
+    filters, views, viewsets, status, permissions, mixins)
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
+
 
 from reviews.models import (Category, Genre, Title,
                             CustomUser, Review)
@@ -88,41 +89,32 @@ class CommentViewSet(viewsets.ModelViewSet):
         return self.get_review().comments.all()
 
 
-class CustomUserViewSet(viewsets.ModelViewSet):
+class CustomUserViewSet(
+    mixins.CreateModelMixin, mixins.ListModelMixin, mixins.DestroyModelMixin,
+    mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = CustomUser.objects.all()
-    serializer_class = CustomUserSerializer
-    permission_classes = (IsAdmin, IsAuthor)
+    serializer_class = AdminSerializer
+    permission_classes = (IsAdmin, )
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
     pagination_class = PageNumberPagination
+    lookup_field = 'username'
 
     @action(
-        methods=['retrieve', 'patch'],
-        detail=True, url_path='me'
+        methods=['get', 'patch'],
+        detail=False, url_path='me',
+        permission_classes=[permissions.IsAuthenticated]
     )
-    def get_user_profile(request):
-        if request.method == 'patch':
-            if request.user.is_admin:
-                serializer = AdminSerializer(
-                    request.user,
-                    data=request.data,
-                    partial=True)
-            else:
-                serializer = CustomUserSerializer(
-                    request.user,
-                    data=request.data,
-                    partial=True)
-
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+    def get_user_profile(self, request):
+        serializer = CustomUserSerializer(request.user, data=request.data, partial=True)
+        if self.request.user.is_admin:
+            serializer = AdminSerializer(
+                request.user,
+                data=request.data,
+                partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def get_users_list(request):
-        if request.method == 'get' and request.user.is_admin:
-            users = CustomUser.objects.all()
-            serializer = AdminSerializer(users, many=True)
-            return Response(serializer.data)
 
 
 class SignUpView(views.APIView):
@@ -132,18 +124,21 @@ class SignUpView(views.APIView):
         serializer = SignUpSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        username = serializer.validated_data['username']
+        email = serializer.validated_data['email']
         user = get_object_or_404(
-            CustomUser, username=serializer.validated_data['username']
+            CustomUser, username=username
         )
         confirmation_code = default_token_generator.make_token(user)
-        user_email = serializer.validated_data['email']
         send_mail(
             subject='YaMbd registration',
-            message=f'Confirmation code for registration: {confirmation_code}',
+            message=('Confirmation code for registration:'
+                     f'{str(confirmation_code)}'),
             from_email=None,
-            recipient_list=[user_email, ]
+            recipient_list=[email]
         )
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class GetTokenView(views.APIView):
@@ -158,6 +153,6 @@ class GetTokenView(views.APIView):
         if default_token_generator.check_token(
             user, serializer.validated_data["confirmation_code"]
         ):
-            token = AccessToken.for_user(user)
+            token = default_token_generator.get_token_for_user(user)
             return Response({'token': str(token)}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

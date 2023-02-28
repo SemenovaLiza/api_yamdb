@@ -1,7 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
-from api_yamdb.settings import ADMIN, MODERATOR, USER, USERNAME_MAX_LENGTH
+from api_yamdb.settings import (ADMIN, MODERATOR, USER,
+                                USERNAME_MAX_LENGTH, EMAIL_MAX_LENGTH)
 
 
 class Title(models.Model):
@@ -65,16 +66,19 @@ ROLES = (
 class CustomUser(AbstractUser):
     username = models.CharField(
         max_length=USERNAME_MAX_LENGTH,
-        unique=True
+        unique=True,
+        blank=False
     )
     email = models.EmailField(
-        max_length=254,
-        unique=True
+        max_length=EMAIL_MAX_LENGTH,
+        unique=True,
+        blank=False
     )
     role = models.CharField(
         choices=ROLES,
         default=USER,
-        max_length=max(len(role[0]) for role in ROLES)
+        max_length=max(len(role[0]) for role in ROLES),
+        blank=True
     )
     bio = models.TextField(blank=True, null=True)
 
