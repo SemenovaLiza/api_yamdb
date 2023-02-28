@@ -82,14 +82,17 @@ class CustomUserSerializer(serializers.ModelSerializer):
         max_length=LAST_NAME_MAX_LENGTH, required=False)
 
     def validate(self, data):
-        if data['username'] == 'me':
-            raise serializers.ValidationError(
-                '"me" is invalid username.')
         if not re.match(r'^[\w.@+-]+\Z', data['username']):
             raise serializers.ValidationError(
                 'The username must consist of letters, digits'
                 'and @/./+/-/_ only.')
         return data
+
+    def username_validation(self, value):
+        if value == 'me':
+            raise serializers.ValidationError(
+                '"me" is invalid username.')
+        return value
 
     class Meta:
         fields = (
@@ -108,14 +111,19 @@ class AdminSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(max_length=EMAIL_MAX_LENGTH, required=True)
 
     def validate(self, data):
-        if data['username'] == 'me':
-            raise serializers.ValidationError(
-                '"me" is invalid username.')
         if not re.match(r'^[\w.@+-]+\Z', data['username']):
             raise serializers.ValidationError(
                 'The username must consist of letters, digits'
-                'and @/./+/-/_ only.')
+                'and @/./+/-/_ only.'
+            )
         return data
+
+    def username_validation(self, value):
+        if value == 'me':
+            raise serializers.ValidationError(
+                '"me" is invalid username.'
+            )
+        return value
 
     class Meta:
         fields = (

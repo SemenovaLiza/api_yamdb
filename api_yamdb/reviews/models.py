@@ -67,16 +67,19 @@ ROLES = (
 class CustomUser(AbstractUser):
     username = models.CharField(
         max_length=USERNAME_MAX_LENGTH,
-        unique=True
+        unique=True,
+        blank=False
     )
     email = models.EmailField(
         max_length=EMAIL_MAX_LENGTH,
-        unique=True
+        unique=True,
+        blank=False
     )
     role = models.CharField(
         choices=ROLES,
         default=USER,
-        max_length=max(len(role[0]) for role in ROLES)
+        max_length=max(len(role[0]) for role in ROLES),
+        blank=True
     )
     bio = models.TextField(blank=True, null=True)
 
