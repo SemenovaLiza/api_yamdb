@@ -1,6 +1,8 @@
+import re
 from rest_framework import serializers
-from reviews.models import Title, Category, Genre, CustomUser, Review
-from api_yamdb.settings import USERNAME_MAX_LENGTH
+from reviews.models import Title, Category, Genre, CustomUser, Review, Comment
+from api_yamdb.settings import (USERNAME_MAX_LENGTH, EMAIL_MAX_LENGTH,
+                                FIRST_NAME_MAX_LENGTH, LAST_NAME_MAX_LENGTH)
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -37,56 +39,15 @@ class TitleSerializerPost(serializers.ModelSerializer):
 
 
 class TitleSerializerGet(serializers.ModelSerializer):
+    rating = serializers.IntegerField(read_only=True)
     category = CategorySerializer()
     genre = GenreSerializer(many=True)
 
     class Meta:
         model = Title
         fields = (
-            'id', 'name', 'year', 'description', 'genre', 'category'
+            'id', 'name', 'year', 'description', 'rating', 'genre', 'category'
         )
-
-class CustomUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        fields = (
-            'id', 'username', 'email',
-            'role', 'bio',
-            'first_name', 'last_name'
-        )
-        read_only_fields = ('role',)
-        model = CustomUser
-
-
-class AdminSerializer(serializers.ModelSerializer):
-    class Meta:
-        fields = (
-            'id', 'username', 'email',
-            'role', 'bio',
-            'first_name', 'last_name'
-        )
-        model = CustomUser
-
-
-class SignUpSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(
-        max_length=USERNAME_MAX_LENGTH, required=True
-    )
-    email = serializers.EmailField(required=True)
-
-    def validate(self, data):
-        if data['username'] == 'me':
-            raise serializers.ValidationError(
-                '"me" - некорректное имя пользователя.')
-        return data
-
-    class Meta:
-        fields = ('username', 'email')
-        model = CustomUser
-
-
-class TokenSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=USERNAME_MAX_LENGTH)
-    confirmation_code = serializers.CharField(max_length=300)
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -98,3 +59,114 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
         fields = ('id', 'text', 'author', 'score', 'pub_date',)
         read_only_fields = ('id', 'author', 'pub_date',)
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        read_only=True, slug_field='username')
+
+    class Meta:
+        model = Comment
+        fields = ('id', 'text', 'author', 'pub_date',)
+        read_only_fields = ('id', 'author', 'pub_date',)
+
+
+class CustomUserSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(
+        max_length=USERNAME_MAX_LENGTH, required=True)
+    email = serializers.EmailField(
+        max_length=EMAIL_MAX_LENGTH, required=True)
+    first_name = serializers.CharField(
+        max_length=FIRST_NAME_MAX_LENGTH, required=False)
+    last_name = serializers.CharField(
+        max_length=LAST_NAME_MAX_LENGTH, required=False)
+
+    def validate(self, data):
+        if not re.match(r'^[\w.@+-]+\Z', data['username']):
+            raise serializers.ValidationError(
+                'The username must consist of letters, digits'
+                'and @/./+/-/_ only.')
+        return data
+
+    def username_validation(self, value):
+        if value == 'me':
+            raise serializers.ValidationError(
+                '"me" is invalid username.')
+        return value
+
+    class Meta:
+        fields = (
+            'username', 'email',
+            'role', 'bio',
+            'first_name', 'last_name'
+        )
+        read_only_fields = ('role',)
+        model = CustomUser
+
+
+class AdminSerializer(serializers.ModelSerializer):
+    role = serializers.CharField(max_length=13, required=False)
+    username = serializers.CharField(
+        max_length=USERNAME_MAX_LENGTH, required=True)
+    email = serializers.EmailField(max_length=EMAIL_MAX_LENGTH, required=True)
+
+    def validate(self, data):
+        if not re.match(r'^[\w.@+-]+\Z', data['username']):
+            raise serializers.ValidationError(
+                'The username must consist of letters, digits'
+                'and @/./+/-/_ only.'
+            )
+        return data
+
+    def username_validation(self, value):
+        if value == 'me':
+            raise serializers.ValidationError(
+                '"me" is invalid username.'
+            )
+        return value
+
+    class Meta:
+        fields = (
+            'username', 'email',
+            'role', 'bio',
+            'first_name', 'last_name'
+        )
+        model = CustomUser
+
+
+class SignUpSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(
+        max_length=USERNAME_MAX_LENGTH, required=True
+    )
+    email = serializers.EmailField(max_length=EMAIL_MAX_LENGTH, required=True)
+
+    def validate(self, data):
+        if data['username'] == 'me':
+            raise serializers.ValidationError(
+                '"me" is invalid username.')
+        if re.match(r'^[\w.@+-]+\Z', data['username']) is None:
+            raise serializers.ValidationError(
+                'The username must consist of letters, digits'
+                'and @/./+/-/_ only.')
+        return data
+
+    def validate_username(self, value):
+        if CustomUser.objects.filter(username=value).exists():
+            raise serializers.ValidationError(
+                "A user with this username already exists.")
+        return value
+
+    def validate_email(self, value):
+        if CustomUser.objects.filter(email=value).exists():
+            raise serializers.ValidationError(
+                "A user with this email already exists.")
+        return value
+
+    class Meta:
+        fields = ('username', 'email')
+        model = CustomUser
+
+
+class TokenSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=USERNAME_MAX_LENGTH)
+    confirmation_code = serializers.CharField(max_length=300)
