@@ -3,6 +3,7 @@ from django.db.models import Avg
 from django.db.models.functions import Round
 from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
+from rest_framework.validators import ValidationError
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework_simplejwt.tokens import AccessToken
@@ -16,7 +17,7 @@ from reviews.models import (Category, Genre, Title,
                             CustomUser, Review)
 from .filters import TitleFilter
 from .permissions import (IsAdminOrReadOnly, IsAdmin,
-                          IsAuthor, AuthorOrStaffOrReadOnly)
+                          AuthorOrStaffOrReadOnly)
 from .serializers import (CategorySerializer, GenreSerializer,
                           TitleSerializerGet, TitleSerializerPost,
                           AdminSerializer, CustomUserSerializer,
@@ -68,6 +69,10 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return get_object_or_404(Title, pk=self.kwargs['title_id'])
 
     def perform_create(self, serializer):
+        queryset = Review.objects.filter(
+            title=self.get_title(), author=self.request.user)
+        if queryset.exists():
+            raise ValidationError('Only one review per author is allowed')
         serializer.save(author=self.request.user, title=self.get_title())
 
     def get_queryset(self):

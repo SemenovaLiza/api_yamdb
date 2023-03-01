@@ -1,6 +1,5 @@
 import re
 from rest_framework import serializers
-
 from reviews.models import Title, Category, Genre, CustomUser, Review, Comment
 from api_yamdb.settings import (USERNAME_MAX_LENGTH, EMAIL_MAX_LENGTH,
                                 FIRST_NAME_MAX_LENGTH, LAST_NAME_MAX_LENGTH)
@@ -60,6 +59,9 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
         fields = ('id', 'text', 'author', 'score', 'pub_date',)
         read_only_fields = ('id', 'author', 'pub_date',)
+        # validators = [UniqueTogetherValidator(
+        #    queryset=Review.objects.all(), fields=('title', 'author',)
+        # )]
 
 
 class CommentSerializer(serializers.ModelSerializer):
