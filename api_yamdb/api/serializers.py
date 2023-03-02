@@ -1,8 +1,8 @@
 from rest_framework import serializers
 
 from reviews.models import Title, Category, Genre, CustomUser, Review, Comment
-from api_yamdb.settings import (USERNAME_MAX_LENGTH, EMAIL_MAX_LENGTH,
-                                FIRST_NAME_MAX_LENGTH, LAST_NAME_MAX_LENGTH)
+from api_yamdb.settings import (USERNAME_MAX_LENGTH, EMAIL_MAX_LENGTH)
+from .validators import username_validation
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -73,13 +73,12 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class CustomUserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
-        max_length=USERNAME_MAX_LENGTH, required=False)
+        max_length=USERNAME_MAX_LENGTH,
+        validators=[username_validation],
+        required=True
+    )
     email = serializers.EmailField(
-        max_length=EMAIL_MAX_LENGTH, required=False)
-    first_name = serializers.CharField(
-        max_length=FIRST_NAME_MAX_LENGTH, required=False)
-    last_name = serializers.CharField(
-        max_length=LAST_NAME_MAX_LENGTH, required=False)
+        max_length=EMAIL_MAX_LENGTH, required=True)
 
     class Meta:
         fields = (
@@ -92,10 +91,15 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
 
 class AdminSerializer(serializers.ModelSerializer):
-    role = serializers.CharField(max_length=13, required=False)
     username = serializers.CharField(
-        max_length=USERNAME_MAX_LENGTH, required=False)
-    email = serializers.EmailField(max_length=EMAIL_MAX_LENGTH, required=False)
+        max_length=USERNAME_MAX_LENGTH,
+        validators=[username_validation],
+        required=True
+    )
+    email = serializers.EmailField(
+        max_length=EMAIL_MAX_LENGTH,
+        required=True
+    )
 
     class Meta:
         fields = (
@@ -108,21 +112,30 @@ class AdminSerializer(serializers.ModelSerializer):
 
 class SignUpSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
-        max_length=USERNAME_MAX_LENGTH, required=True
+        max_length=USERNAME_MAX_LENGTH,
+        validators=[username_validation],
+        required=True
     )
-    email = serializers.EmailField(max_length=EMAIL_MAX_LENGTH, required=True)
+    email = serializers.EmailField(
+        max_length=EMAIL_MAX_LENGTH,
+        required=True
+    )
 
-    def validate_username(self, value):
-        if CustomUser.objects.filter(username=value).exists():
-            raise serializers.ValidationError(
-                "A user with this username already exists.")
-        return value
+    def validate(self, data):
+        name = data["username"]
+        email = data["email"]
+        if not CustomUser.objects.filter(username=name, email=email).exists():
+            if CustomUser.objects.filter(username=name):
+                raise serializers.ValidationError(
+                    'A user with this username already exists.'
+                )
 
-    def validate_email(self, value):
-        if CustomUser.objects.filter(email=value).exists():
-            raise serializers.ValidationError(
-                "A user with this email already exists.")
-        return value
+            if CustomUser.objects.filter(email=email):
+                raise serializers.ValidationError(
+                    'A user with this email already exists.'
+                )
+
+        return data
 
     class Meta:
         fields = ('username', 'email')
