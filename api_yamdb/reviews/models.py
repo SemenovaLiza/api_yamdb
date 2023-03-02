@@ -70,7 +70,7 @@ class CustomUser(AbstractUser):
         max_length=USERNAME_MAX_LENGTH,
         unique=True,
         blank=False,
-        validators=[username_validation]
+        validators=[validate_username]
     )
     email = models.EmailField(
         max_length=EMAIL_MAX_LENGTH,
