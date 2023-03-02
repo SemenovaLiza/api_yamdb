@@ -2,7 +2,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 from api_yamdb.settings import (ADMIN, MODERATOR, USER,
-                                USERNAME_MAX_LENGTH, EMAIL_MAX_LENGTH)
+                                USERNAME_MAX_LENGTH, EMAIL_MAX_LENGTH,
+                                FIRST_NAME_MAX_LENGTH, LAST_NAME_MAX_LENGTH)
 
 
 class Title(models.Model):
@@ -81,6 +82,14 @@ class CustomUser(AbstractUser):
         blank=True
     )
     bio = models.TextField(blank=True, null=True)
+    first_name = models.CharField(
+        max_length=FIRST_NAME_MAX_LENGTH,
+        blank=True
+    )
+    last_name = models.CharField(
+        max_length=LAST_NAME_MAX_LENGTH,
+        blank=True
+    )
 
     @property
     def is_admin(self):
