@@ -72,13 +72,6 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(
-        max_length=USERNAME_MAX_LENGTH,
-        validators=[username_validation],
-        required=True
-    )
-    email = serializers.EmailField(
-        max_length=EMAIL_MAX_LENGTH, required=True)
 
     class Meta:
         fields = (
@@ -91,15 +84,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
 
 class AdminSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(
-        max_length=USERNAME_MAX_LENGTH,
-        validators=[username_validation],
-        required=True
-    )
-    email = serializers.EmailField(
-        max_length=EMAIL_MAX_LENGTH,
-        required=True
-    )
 
     class Meta:
         fields = (
