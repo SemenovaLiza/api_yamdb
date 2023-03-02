@@ -68,7 +68,8 @@ class CustomUser(AbstractUser):
     username = models.CharField(
         max_length=USERNAME_MAX_LENGTH,
         unique=True,
-        blank=False
+        blank=False,
+        validators=[validate_username]
     )
     email = models.EmailField(
         max_length=EMAIL_MAX_LENGTH,
