@@ -46,7 +46,8 @@ class GenreViewSet(viewsets.ModelViewSet):
     search_fields = ('name',)
     ordering_fields = ('name', 'year')
 
-    @action(detail=False, methods=['delete'],
+    @action(
+        detail=False, methods=['delete'],
         url_path=r'(?P<slug>\w+)',
         lookup_field='slug')
     def get_genre(self, request, slug):
@@ -66,7 +67,8 @@ class CategoryViewSet(viewsets.ModelViewSet):
     search_fields = ('name',)
     ordering_fields = ('name', 'year')
 
-    @action(detail=False, methods=['delete'],
+    @action(
+        detail=False, methods=['delete'],
         url_path=r'(?P<slug>\w+)',
         lookup_field='slug')
     def get_category(self, request, slug):
