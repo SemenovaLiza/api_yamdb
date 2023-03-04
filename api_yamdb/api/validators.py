@@ -1,0 +1,13 @@
+import re
+from django.core.exceptions import ValidationError
+
+
+def username_validation(value):
+    if not re.match(r'^[\w.@+-]+\Z', value):
+        raise ValidationError(
+            'The username must consist of letters, digits'
+            'and @/./+/-/_ only.')
+    if value == 'me':
+        raise ValidationError(
+            '"me" is invalid username.')
+    return value

@@ -6,9 +6,8 @@ from django.core.mail import send_mail
 from rest_framework.validators import ValidationError
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework import (
-    filters, views, viewsets, status, permissions, mixins)
+    filters, views, viewsets, status, permissions)
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -27,7 +26,6 @@ from .serializers import (CategorySerializer, GenreSerializer,
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(rating=Round(Avg('reviews__score')))
-    serializer_class = TitleSerializerGet
     permission_classes = (IsAdminOrReadOnly,)
     filterset_class = TitleFilter
     pagination_class = PageNumberPagination
@@ -45,8 +43,17 @@ class GenreViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,
                        filters.SearchFilter,
                        filters.OrderingFilter)
-    search_fields = ('name')
+    search_fields = ('name',)
     ordering_fields = ('name', 'year')
+
+    @action(detail=False, methods=['delete'],
+        url_path=r'(?P<slug>\w+)',
+        lookup_field='slug')
+    def get_genre(self, request, slug):
+        genre = self.get_object()
+        serializer = GenreSerializer(genre)
+        genre.delete()
+        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -56,8 +63,17 @@ class CategoryViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,
                        filters.SearchFilter,
                        filters.OrderingFilter)
-    search_fields = ('name')
+    search_fields = ('name',)
     ordering_fields = ('name', 'year')
+
+    @action(detail=False, methods=['delete'],
+        url_path=r'(?P<slug>\w+)',
+        lookup_field='slug')
+    def get_category(self, request, slug):
+        category = self.get_object()
+        serializer = CategorySerializer(category)
+        category.delete()
+        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -94,9 +110,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         return self.get_review().comments.all()
 
 
-class CustomUserViewSet(
-    mixins.CreateModelMixin, mixins.ListModelMixin, mixins.DestroyModelMixin,
-    mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+class CustomUserViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = AdminSerializer
     permission_classes = (IsAdmin, )
@@ -104,19 +118,20 @@ class CustomUserViewSet(
     search_fields = ('username',)
     pagination_class = PageNumberPagination
     lookup_field = 'username'
+    http_method_names = ("get", "post", "delete", "patch")
 
     @action(
         methods=['get', 'patch'],
-        detail=False, url_path='me',
+        detail=False,
+        url_path='me',
         permission_classes=[permissions.IsAuthenticated]
     )
     def get_user_profile(self, request):
-        serializer = CustomUserSerializer(request.user, data=request.data, partial=True)
-        if self.request.user.is_admin:
-            serializer = AdminSerializer(
-                request.user,
-                data=request.data,
-                partial=True)
+        serializer = CustomUserSerializer(
+            request.user,
+            data=request.data,
+            partial=True
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -128,12 +143,10 @@ class SignUpView(views.APIView):
     def post(self, request):
         serializer = SignUpSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
         username = serializer.validated_data['username']
         email = serializer.validated_data['email']
-        user = get_object_or_404(
-            CustomUser, username=username
-        )
+        user, created = CustomUser.objects.get_or_create(
+            username=username, email=email)
         confirmation_code = default_token_generator.make_token(user)
         send_mail(
             subject='YaMbd registration',
@@ -142,7 +155,6 @@ class SignUpView(views.APIView):
             from_email=None,
             recipient_list=[email]
         )
-        serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 

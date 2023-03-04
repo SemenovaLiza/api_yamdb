@@ -3,34 +3,9 @@ from django.db.models.constraints import UniqueConstraint
 from django.contrib.auth.models import AbstractUser
 
 from api_yamdb.settings import (ADMIN, MODERATOR, USER,
-                                USERNAME_MAX_LENGTH, EMAIL_MAX_LENGTH)
-
-
-class Title(models.Model):
-    name = models.CharField(max_length=256, verbose_name='Название')
-    year = models.IntegerField(verbose_name='Год')
-    description = models.TextField(
-        max_length=1000, null=True, blank=True, verbose_name='Описание'
-    )
-    genre = models.ManyToManyField(
-        'Genre',
-        related_name='genre',
-        verbose_name='Жанр',
-    )
-    category = models.ForeignKey(
-        'Category',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=False,
-        related_name='category',
-        verbose_name='Категория',
-    )
-
-    class Meta:
-        verbose_name = 'Медиаконтент'
-
-    def __str__(self):
-        return self.name
+                                USERNAME_MAX_LENGTH, EMAIL_MAX_LENGTH,
+                                FIRST_NAME_MAX_LENGTH, LAST_NAME_MAX_LENGTH)
+from api.validators import username_validation
 
 
 class Category(models.Model):
@@ -55,7 +30,40 @@ class Genre(models.Model):
 
     def __str__(self):
         return self.name
+    
 
+class GenreTitle(models.Model):
+    genre = models.ForeignKey('Genre', on_delete=models.CASCADE)
+    title = models.ForeignKey('Title', on_delete=models.CASCADE)
+
+
+class Title(models.Model):
+    name = models.CharField(max_length=256, verbose_name='Название')
+    year = models.IntegerField(verbose_name='Год')
+    description = models.TextField(
+        max_length=1000, null=True, blank=True, verbose_name='Описание'
+    )
+    genre = models.ManyToManyField(
+        Genre,
+        through=GenreTitle,
+        related_name='genre',
+        verbose_name='Жанр',
+    )
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=False,
+        related_name='category',
+        verbose_name='Категория',
+    )
+
+    class Meta:
+        verbose_name = 'Медиаконтент'
+
+    def __str__(self):
+        return self.name
+    
 
 ROLES = (
         (ADMIN, 'Администратор'),
@@ -68,7 +76,8 @@ class CustomUser(AbstractUser):
     username = models.CharField(
         max_length=USERNAME_MAX_LENGTH,
         unique=True,
-        blank=False
+        blank=False,
+        validators=[username_validation]
     )
     email = models.EmailField(
         max_length=EMAIL_MAX_LENGTH,
@@ -82,6 +91,14 @@ class CustomUser(AbstractUser):
         blank=True
     )
     bio = models.TextField(blank=True, null=True)
+    first_name = models.CharField(
+        max_length=FIRST_NAME_MAX_LENGTH,
+        blank=True
+    )
+    last_name = models.CharField(
+        max_length=LAST_NAME_MAX_LENGTH,
+        blank=True
+    )
 
     @property
     def is_admin(self):
