@@ -1,5 +1,4 @@
 from rest_framework import serializers
-
 from reviews.models import Title, Category, Genre, CustomUser, Review, Comment
 from api_yamdb.settings import (USERNAME_MAX_LENGTH, EMAIL_MAX_LENGTH)
 from .validators import username_validation

@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models.constraints import UniqueConstraint
 from django.contrib.auth.models import AbstractUser
 
 from api_yamdb.settings import (ADMIN, MODERATOR, USER,
@@ -125,13 +126,12 @@ class Review(models.Model):
     score = models.IntegerField()
     text = models.TextField()
 
+    class Meta:
+        constraints = [UniqueConstraint(
+            fields=['title', 'author'], name='unique_reviews')]
+
     def __str__(self):
         return self.text
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=['author', 'title'],
-                                    name='unique_reviews')]
 
 
 class Comment(models.Model):
