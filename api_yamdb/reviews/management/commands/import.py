@@ -1,7 +1,7 @@
 import csv
 from django.conf import settings
 from django.core.management import BaseCommand
-from reviews.models import (Category, Genre, Title, CustomUser, Review, Comment, Genre_Title)
+from reviews.models import (Category, Genre, Title, CustomUser, Review, Comment, GenreTitle)
 
 SOURCES = {
     CustomUser: 'users.csv',
@@ -10,7 +10,7 @@ SOURCES = {
     Title: 'titles.csv',
     Review: 'review.csv',
     Comment: 'comments.csv',
-    Genre_Title: 'genre_title.csv'
+    GenreTitle: 'genre_title.csv'
 }
 
 
