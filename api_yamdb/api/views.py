@@ -25,7 +25,6 @@ from .serializers import (CategorySerializer, GenreSerializer,
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(rating=Round(Avg('reviews__score')))
-    serializer_class = TitleSerializerGet
     permission_classes = (IsAdminOrReadOnly,)
     filterset_class = TitleFilter
     pagination_class = PageNumberPagination
@@ -43,8 +42,17 @@ class GenreViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,
                        filters.SearchFilter,
                        filters.OrderingFilter)
-    search_fields = ('name')
+    search_fields = ('name',)
     ordering_fields = ('name', 'year')
+
+    @action(detail=False, methods=['delete'],
+        url_path=r'(?P<slug>\w+)',
+        lookup_field='slug')
+    def get_genre(self, request, slug):
+        genre = self.get_object()
+        serializer = GenreSerializer(genre)
+        genre.delete()
+        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -54,8 +62,17 @@ class CategoryViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,
                        filters.SearchFilter,
                        filters.OrderingFilter)
-    search_fields = ('name')
+    search_fields = ('name',)
     ordering_fields = ('name', 'year')
+
+    @action(detail=False, methods=['delete'],
+        url_path=r'(?P<slug>\w+)',
+        lookup_field='slug')
+    def get_category(self, request, slug):
+        category = self.get_object()
+        serializer = CategorySerializer(category)
+        category.delete()
+        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
