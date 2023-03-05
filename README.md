@@ -1,4 +1,4 @@
-# Api Yambd
+# Api Yamdb
 ### *Description*
 The project allows you to create multimedia content and leave reviews for it, as well as comment on the reviews.
 
