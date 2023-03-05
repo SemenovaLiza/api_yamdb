@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 
 
 def validate_username(value):
+    """Check whether username corresponds to the requirements."""
     if value == 'me':
         raise ValidationError(
             '"me" is invalid username.'

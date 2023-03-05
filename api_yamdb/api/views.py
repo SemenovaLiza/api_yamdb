@@ -89,14 +89,18 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
+    """A ViewSet for CRUD operations on the Review model."""
     serializer_class = ReviewSerializer
     pagination_class = PageNumberPagination
     permission_classes = (AuthorOrStaffOrReadOnly,)
 
     def get_title(self):
+        """Instrumental method for accessing Title object from request."""
         return get_object_or_404(Title, pk=self.kwargs['title_id'])
 
     def perform_create(self, serializer):
+        """Custom creation method for Review objects.
+        Provides user and title info to the object after uniqueness check."""
         queryset = Review.objects.filter(
             title=self.get_title(), author=self.request.user)
         if queryset.exists():
@@ -104,18 +108,23 @@ class ReviewViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, title=self.get_title())
 
     def get_queryset(self):
+        """Overrided reviews query for getting title-related objects."""
         return self.get_title().reviews.all()
 
 
 class CommentViewSet(viewsets.ModelViewSet):
+    """A ViewSet for CRUD operations on the Comment model."""
     serializer_class = CommentSerializer
     pagination_class = PageNumberPagination
     permission_classes = (AuthorOrStaffOrReadOnly,)
 
     def get_review(self):
+        """Instrumental method for accessing Review object from the request."""
         return get_object_or_404(Review, pk=self.kwargs['review_id'])
 
     def perform_create(self, serializer):
+        """Custom creation method for Comment objects.
+        Provides review and user relation to the object."""
         serializer.save(author=self.request.user, review=self.get_review())
 
     def get_queryset(self):
@@ -123,6 +132,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 
 class CustomUserViewSet(viewsets.ModelViewSet):
+    """A ViewSet for CRUD operations on the CustomUser model."""
     queryset = CustomUser.objects.all()
     serializer_class = AdminSerializer
     permission_classes = (IsAdmin, )
@@ -139,6 +149,7 @@ class CustomUserViewSet(viewsets.ModelViewSet):
         permission_classes=[permissions.IsAuthenticated]
     )
     def get_user_profile(self, request):
+        """Get user profile info with 200."""
         serializer = CustomUserSerializer(
             request.user,
             data=request.data,
@@ -150,9 +161,11 @@ class CustomUserViewSet(viewsets.ModelViewSet):
 
 
 class SignUpView(views.APIView):
+    """A view for creating new CustomUser model."""
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
+        """Create CustomUser with 200 and send confirmation email."""
         serializer = SignUpSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         username = serializer.validated_data['username']
@@ -171,9 +184,11 @@ class SignUpView(views.APIView):
 
 
 class GetTokenView(views.APIView):
+    """A view for getting AuthToken with email confirmation code."""
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
+        """Get AuthToken with 200. Response 400 with incorrect data."""
         serializer = TokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = get_object_or_404(
