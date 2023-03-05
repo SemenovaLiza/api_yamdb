@@ -13,7 +13,6 @@ class TitleFilter(django_filters.FilterSet):
     year = django_filters.NumberFilter(field_name='year')
 
     class Meta:
-        """A metaclass for the TitleFilter class."""
 
         model = Title
         fields = '__all__'

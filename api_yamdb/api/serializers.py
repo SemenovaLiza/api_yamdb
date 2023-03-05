@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from reviews.models import Title, Category, Genre, CustomUser, Review, Comment
+
 from api_yamdb.settings import (USERNAME_MAX_LENGTH, EMAIL_MAX_LENGTH)
+from reviews.models import Title, Category, Genre, CustomUser, Review, Comment
 from .validators import username_validation
 
 
@@ -8,7 +9,6 @@ class CategorySerializer(serializers.ModelSerializer):
     """A serializer for the Category model."""
 
     class Meta:
-        """Defines metadata options for the 'Category' serializer."""
 
         model = Category
         fields = ('name', 'slug')
@@ -18,7 +18,6 @@ class GenreSerializer(serializers.ModelSerializer):
     """A serializer for the Genre model."""
 
     class Meta:
-        """Defines metadata options for the 'Genre' serializer."""
 
         model = Genre
         fields = ('name', 'slug')
@@ -38,8 +37,6 @@ class TitleSerializerPost(serializers.ModelSerializer):
     )
 
     class Meta:
-        """Defines metadata options for
-        the 'TitleSerializerPost' serializer."""
 
         model = Title
         fields = (
@@ -57,7 +54,6 @@ class TitleSerializerGet(serializers.ModelSerializer):
     genre = GenreSerializer(many=True, read_only=True)
 
     class Meta:
-        """Defines metadata options for the 'TitleSerializerGet' serializer."""
 
         model = Title
         fields = (
@@ -72,7 +68,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     score = serializers.IntegerField(min_value=1, max_value=10)
 
     class Meta:
-        """Defines metadata options for the 'ReviewSerializer' serializer."""
+
         model = Review
         fields = ('id', 'text', 'author', 'score', 'pub_date',)
         read_only_fields = ('id', 'author', 'pub_date',)
@@ -84,7 +80,7 @@ class CommentSerializer(serializers.ModelSerializer):
         read_only=True, slug_field='username')
 
     class Meta:
-        """Defines metadata options for the 'CommentSerializer' serializer."""
+
         model = Comment
         fields = ('id', 'text', 'author', 'pub_date',)
         read_only_fields = ('id', 'author', 'pub_date',)
@@ -96,8 +92,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
     """
 
     class Meta:
-        """Defines metadata options for the 'CustomUserSerializer' serializer.
-        """
+
         fields = (
             'username', 'email',
             'role', 'bio',
@@ -113,7 +108,7 @@ class AdminSerializer(serializers.ModelSerializer):
     """
 
     class Meta:
-        """Defines metadata options for the 'AdminSerializer' serializer."""
+
         fields = (
             'username', 'email',
             'role', 'bio',
@@ -154,7 +149,7 @@ class SignUpSerializer(serializers.ModelSerializer):
         return data
 
     class Meta:
-        """Defines metadata options for the 'SignUpSerializer' serializer."""
+
         fields = ('username', 'email')
         model = CustomUser
 

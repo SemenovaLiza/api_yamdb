@@ -32,7 +32,6 @@ class Title(models.Model):
     )
 
     class Meta:
-        """A class that defines metadata for the model."""
 
         verbose_name = 'Медиаконтент'
         verbose_name_plural = 'Медиаконтент'
@@ -49,7 +48,6 @@ class Category(models.Model):
     slug = models.SlugField(max_length=50, unique=True, verbose_name='slug')
 
     class Meta:
-        """A class that defines metadata for the model."""
 
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
@@ -66,7 +64,6 @@ class Genre(models.Model):
     slug = models.SlugField(max_length=50, unique=True, verbose_name='Slug')
 
     class Meta:
-        """A class that defines metadata for the model."""
 
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
@@ -148,7 +145,7 @@ class Review(models.Model):
     text = models.TextField()
 
     class Meta:
-        """A class that defines metadata for the model."""
+
         constraints = [UniqueConstraint(
             fields=['title', 'author'], name='unique_reviews')]
 

@@ -11,7 +11,6 @@ from rest_framework import (
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 
-
 from reviews.models import (Category, Genre, Title,
                             CustomUser, Review)
 from .filters import TitleFilter
@@ -128,6 +127,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, review=self.get_review())
 
     def get_queryset(self):
+        """Overrided comments query for getting review-related comments."""
         return self.get_review().comments.all()
 
 
