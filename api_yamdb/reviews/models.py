@@ -32,7 +32,6 @@ class Title(models.Model):
     )
 
     class Meta:
-        """A class that defines metadata for the model."""
 
         verbose_name = 'Медиаконтент'
         verbose_name_plural = 'Медиаконтент'
@@ -49,7 +48,6 @@ class Category(models.Model):
     slug = models.SlugField(max_length=50, unique=True, verbose_name='slug')
 
     class Meta:
-        """A class that defines metadata for the model."""
 
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
@@ -66,7 +64,6 @@ class Genre(models.Model):
     slug = models.SlugField(max_length=50, unique=True, verbose_name='Slug')
 
     class Meta:
-        """A class that defines metadata for the model."""
 
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
@@ -91,6 +88,7 @@ ROLES = (
 
 
 class CustomUser(AbstractUser):
+    """Customized user model with RBAC implemented."""
     username = models.CharField(
         max_length=USERNAME_MAX_LENGTH,
         unique=True,
@@ -127,10 +125,12 @@ class CustomUser(AbstractUser):
         return self.role == MODERATOR
 
     def __str__(self):
+        """Represent a string of the CustomUser instance. Returns username."""
         return self.username
 
 
 class Review(models.Model):
+    """The Review model represents a user-created review on media title."""
     author = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
@@ -145,14 +145,17 @@ class Review(models.Model):
     text = models.TextField()
 
     class Meta:
+
         constraints = [UniqueConstraint(
             fields=['title', 'author'], name='unique_reviews')]
 
     def __str__(self):
+        """Represent a string of the Review instance. Returns review's text."""
         return self.text
 
 
 class Comment(models.Model):
+    """The Comment model represents a user comments on review objects."""
     text = models.TextField()
     author = models.ForeignKey(
         CustomUser, on_delete=models.CASCADE,
