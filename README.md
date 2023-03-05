@@ -168,7 +168,7 @@ You can also change your account details.
   "text": "string"
 }
 ```
-### Project developers:
+### *Project developers:*
 
 User authorization - teamlead Semenova Elizaveta([Github](https://github.com/SemenovaLiza))
 
