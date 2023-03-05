@@ -43,7 +43,7 @@ pip install -r requirements.txt
 ```
 Go to the yatube_api app:
 ```
-cd yatube_api
+cd api_yamdb
 ```
 Perform migrations:
 ```
