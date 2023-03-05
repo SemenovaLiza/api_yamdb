@@ -170,6 +170,8 @@ You can also change your account details.
 ```
 ### Project developers:
 
-User authorization - Semenova Elizaveta([Github](https://github.com/SemenovaLiza))
+User authorization - teamlead Semenova Elizaveta([Github](https://github.com/SemenovaLiza))
+
 Multimedia, genres and categories - Zakharov Vladimir([Github](https://github.com/zakharovvladimir))
+
 Comments and reviews - Vladimir Dolgih([Github](https://github.com/Waffe1n))
