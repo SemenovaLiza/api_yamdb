@@ -25,18 +25,24 @@ from .serializers import (CategorySerializer, GenreSerializer,
 
 
 class TitleViewSet(viewsets.ModelViewSet):
+    """A ViewSet for CRUD operations on the Title model."""
+
     queryset = Title.objects.annotate(rating=Round(Avg('reviews__score')))
+    serializer_class = TitleSerializerPost
     permission_classes = (IsAdminOrReadOnly,)
     filterset_class = TitleFilter
     pagination_class = PageNumberPagination
 
     def get_serializer_class(self):
+        """Request Serializer to use."""
         if self.request.method in ('POST', 'PATCH'):
             return TitleSerializerPost
         return TitleSerializerGet
 
 
 class GenreViewSet(viewsets.ModelViewSet):
+    """A ViewSet for CRUD operations on the Genre model."""
+
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
@@ -51,6 +57,7 @@ class GenreViewSet(viewsets.ModelViewSet):
         url_path=r'(?P<slug>\w+)',
         lookup_field='slug')
     def get_genre(self, request, slug):
+        """Get Genre func with 204."""
         genre = self.get_object()
         serializer = GenreSerializer(genre)
         genre.delete()
@@ -58,6 +65,8 @@ class GenreViewSet(viewsets.ModelViewSet):
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
+    """A ViewSet for CRUD operations on the Category model."""
+
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
@@ -72,6 +81,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
         url_path=r'(?P<slug>\w+)',
         lookup_field='slug')
     def get_category(self, request, slug):
+        """Get Category func with 204."""
         category = self.get_object()
         serializer = CategorySerializer(category)
         category.delete()

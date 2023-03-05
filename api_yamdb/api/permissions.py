@@ -2,7 +2,10 @@ from rest_framework import permissions
 
 
 class IsAdminOrReadOnly(permissions.BasePermission):
+    """Permission to only allow admin users to perform unsafe methods."""
+
     def has_permission(self, request, view):
+        """Whether the user has permission to perform the request."""
         return (
             request.method in permissions.SAFE_METHODS
             or request.user.is_authenticated and request.user.is_admin)
