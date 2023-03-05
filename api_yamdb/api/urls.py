@@ -1,3 +1,5 @@
+"""A list of URL patterns for the API endpoints."""
+
 from django.urls import include, path
 from rest_framework.routers import SimpleRouter
 

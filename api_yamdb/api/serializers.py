@@ -5,20 +5,28 @@ from .validators import username_validation
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    """A serializer for the Category model."""
 
     class Meta:
+        """Defines metadata options for the 'Category' serializer."""
+
         model = Category
         fields = ('name', 'slug')
 
 
 class GenreSerializer(serializers.ModelSerializer):
+    """A serializer for the Genre model."""
 
     class Meta:
+        """Defines metadata options for the 'Genre' serializer."""
+
         model = Genre
         fields = ('name', 'slug')
 
 
 class TitleSerializerPost(serializers.ModelSerializer):
+    """A serializer for the Title model."""
+
     category = serializers.SlugRelatedField(
         queryset=Category.objects.all(),
         slug_field='slug',
@@ -30,6 +38,9 @@ class TitleSerializerPost(serializers.ModelSerializer):
     )
 
     class Meta:
+        """Defines metadata options for
+        the 'TitleSerializerPost' serializer."""
+
         model = Title
         fields = (
             'id', 'name', 'year', 'description', 'genre', 'category'
@@ -38,11 +49,16 @@ class TitleSerializerPost(serializers.ModelSerializer):
 
 
 class TitleSerializerGet(serializers.ModelSerializer):
+    """A serializer for the Title model that serializes selected fields.
+    Includes nested representations of related fields."""
+
     rating = serializers.IntegerField(read_only=True)
-    category = CategorySerializer()
-    genre = GenreSerializer(many=True)
+    category = CategorySerializer(read_only=True)
+    genre = GenreSerializer(many=True, read_only=True)
 
     class Meta:
+        """Defines metadata options for the 'TitleSerializerGet' serializer."""
+
         model = Title
         fields = (
             'id', 'name', 'year', 'description', 'rating', 'genre', 'category'

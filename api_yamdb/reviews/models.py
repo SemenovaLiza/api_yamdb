@@ -8,49 +8,22 @@ from api_yamdb.settings import (ADMIN, MODERATOR, USER,
 from api.validators import username_validation
 
 
-class Category(models.Model):
-    name = models.CharField(max_length=256, verbose_name='Название')
-    slug = models.SlugField(max_length=50, unique=True, verbose_name='slug')
-
-    class Meta:
-        verbose_name = 'Категория'
-        verbose_name_plural = 'Категории'
-
-    def __str__(self):
-        return self.name
-
-
-class Genre(models.Model):
-    name = models.CharField(max_length=256, verbose_name='Название жанра')
-    slug = models.SlugField(max_length=50, unique=True, verbose_name='Slug')
-
-    class Meta:
-        verbose_name = 'Жанр'
-        verbose_name_plural = 'Жанры'
-
-    def __str__(self):
-        return self.name
-    
-
-class GenreTitle(models.Model):
-    genre = models.ForeignKey('Genre', on_delete=models.CASCADE)
-    title = models.ForeignKey('Title', on_delete=models.CASCADE)
-
-
 class Title(models.Model):
+    """The Title model represents a media content title."""
+
     name = models.CharField(max_length=256, verbose_name='Название')
     year = models.IntegerField(verbose_name='Год')
     description = models.TextField(
         max_length=1000, null=True, blank=True, verbose_name='Описание'
     )
     genre = models.ManyToManyField(
-        Genre,
-        through=GenreTitle,
+        'Genre',
+        through='GenreTitle',
         related_name='genre',
         verbose_name='Жанр',
     )
     category = models.ForeignKey(
-        Category,
+        'Category',
         on_delete=models.SET_NULL,
         null=True,
         blank=False,
@@ -59,11 +32,56 @@ class Title(models.Model):
     )
 
     class Meta:
+        """A class that defines metadata for the model."""
+
         verbose_name = 'Медиаконтент'
+        verbose_name_plural = 'Медиаконтент'
 
     def __str__(self):
+        """Represent a string of the Title instance."""
         return self.name
-    
+
+
+class Category(models.Model):
+    """The Category model represents a media content category."""
+
+    name = models.CharField(max_length=256, verbose_name='Название')
+    slug = models.SlugField(max_length=50, unique=True, verbose_name='slug')
+
+    class Meta:
+        """A class that defines metadata for the model."""
+
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
+
+    def __str__(self):
+        """Represent a string of the Category instance."""
+        return self.name
+
+
+class Genre(models.Model):
+    """The Genre model represents a media content genre."""
+
+    name = models.CharField(max_length=256, verbose_name='Название жанра')
+    slug = models.SlugField(max_length=50, unique=True, verbose_name='Slug')
+
+    class Meta:
+        """A class that defines metadata for the model."""
+
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
+
+    def __str__(self):
+        """Represent a string of the Genre instance."""
+        return self.name
+
+
+class GenreTitle(models.Model):
+    """The model represents the relationship between a Title and a Genre."""
+
+    genre = models.ForeignKey('Genre', on_delete=models.CASCADE)
+    title = models.ForeignKey('Title', on_delete=models.CASCADE)
+
 
 ROLES = (
         (ADMIN, 'Администратор'),
