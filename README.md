@@ -53,7 +53,7 @@ Launсh the project:
 ```
 python3 manage.py runserver
 ```
-A token is required to use some methods in the in Api Yambd project. To get it, you need to sign up using your email and username.
+A token is required to use some methods in the in Api Yamdb project. To get it, you need to sign up using your email and username.
 #### POST /api/v1/auth/signup/
 ```
 {
