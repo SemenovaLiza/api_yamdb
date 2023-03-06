@@ -3,7 +3,7 @@
 from django.urls import include, path
 from rest_framework.routers import SimpleRouter
 
-from . import views
+from .v1 import views
 
 
 v1_router = SimpleRouter()
@@ -19,6 +19,6 @@ v1_router.register(
 
 urlpatterns = [
     path('v1/', include(v1_router.urls)),
-    path('v1/auth/signup/', views.SignUpView.as_view(), name='signup'),
-    path('v1/auth/token/', views.GetTokenView.as_view(), name='token'),
+    path('v1/auth/signup/', views.signup, name='signup'),
+    path('v1/auth/token/', views.get_token, name='token'),
 ]

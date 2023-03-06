@@ -5,7 +5,7 @@ from django.contrib.auth.models import AbstractUser
 from api_yamdb.settings import (ADMIN, MODERATOR, USER,
                                 USERNAME_MAX_LENGTH, EMAIL_MAX_LENGTH,
                                 FIRST_NAME_MAX_LENGTH, LAST_NAME_MAX_LENGTH)
-from api.validators import username_validation
+from api.v1.validators import username_validation
 
 
 class Title(models.Model):
@@ -80,15 +80,13 @@ class GenreTitle(models.Model):
     title = models.ForeignKey('Title', on_delete=models.CASCADE)
 
 
-ROLES = (
+class CustomUser(AbstractUser):
+    """Customized user model with RBAC implemented."""
+    ROLES = (
         (ADMIN, 'Администратор'),
         (MODERATOR, 'Модератор'),
         (USER, 'Пользователь')
-)
-
-
-class CustomUser(AbstractUser):
-    """Customized user model with RBAC implemented."""
+    )
     username = models.CharField(
         max_length=USERNAME_MAX_LENGTH,
         unique=True,
