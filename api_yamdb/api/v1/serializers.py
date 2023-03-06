@@ -88,23 +88,6 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class CustomUserSerializer(serializers.ModelSerializer):
     """A serializer for the CustomUser model that serializes selected fields.
-    Meant for non-admin access to the user list.
-    """
-
-    class Meta:
-
-        fields = (
-            'username', 'email',
-            'role', 'bio',
-            'first_name', 'last_name'
-        )
-        read_only_fields = ('role',)
-        model = CustomUser
-
-
-class AdminSerializer(serializers.ModelSerializer):
-    """A serializer for the CustomUser model that serializes selected fields.
-    Meant for the admin-only access to user roles.
     """
 
     class Meta:
@@ -115,6 +98,13 @@ class AdminSerializer(serializers.ModelSerializer):
             'first_name', 'last_name'
         )
         model = CustomUser
+
+
+class EditUserProfileSerializer(CustomUserSerializer):
+    """Serializer for changing data in the user's profile,
+    except for the user's role.
+    """
+    role = serializers.CharField(read_only=True)
 
 
 class SignUpSerializer(serializers.ModelSerializer):
