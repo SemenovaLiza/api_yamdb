@@ -7,7 +7,7 @@ from rest_framework.validators import ValidationError
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework import (
-    filters, views, viewsets, status, permissions)
+    filters, views, viewsets, status, permissions, mixins)
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -39,11 +39,15 @@ class TitleViewSet(viewsets.ModelViewSet):
         return TitleSerializerGet
 
 
-class ListMixin:
-    """Correspond to the list."""
+class GenreViewSet(mixins.ListModelMixin,
+                   mixins.CreateModelMixin,
+                   mixins.DestroyModelMixin,
+                   viewsets.GenericViewSet
+                   ):
+    """A ViewSet for CRUD operations on the Genre model."""
 
-    queryset = None
-    serializer_class = None
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,
                        filters.SearchFilter,
@@ -51,57 +55,23 @@ class ListMixin:
     search_fields = ('name',)
     ordering_fields = ('name', 'year')
     lookup_field = 'slug'
-    http_method_names = ('get', 'post', 'delete')
 
 
-class DestroyMixin:
-    """Correspond to delete."""
-
-    def destroy(self, request, *args, **kwargs):
-        """Delete an existing instance of the view model associated."""
-        instance = self.get_object()
-        self.perform_destroy(instance)
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class NotAllowedMixin:
-    """Correspond to retreat."""
-
-    def http_method_not_allowed(self, request, *args, **kwargs):
-        """Return a 405 response with no content."""
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    def retrieve(self, request, *args, **kwargs):
-        """Return a response with a status of 405."""
-        return self.http_method_not_allowed(request, *args, **kwargs)
-
-
-class GenreListMixin(ListMixin):
-    """Inherit from ListMixin with settings."""
-
-    queryset = Genre.objects.all()
-    serializer_class = GenreSerializer
-
-
-class GenreViewSet(GenreListMixin, DestroyMixin,
-                   NotAllowedMixin, viewsets.ModelViewSet):
-    """A ViewSet for CRUD operations on the Genre model."""
-
-    pass
-
-
-class CategoryListMixin(ListMixin):
-    """Inherit from ListMixin with settings."""
+class CategoryViewSet(mixins.ListModelMixin,
+                      mixins.CreateModelMixin,
+                      mixins.DestroyModelMixin,
+                      viewsets.GenericViewSet):
+    """A ViewSet for CRUD operations on the Category model."""
 
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-
-
-class CategoryViewSet(CategoryListMixin, DestroyMixin,
-                      NotAllowedMixin, viewsets.ModelViewSet):
-    """A ViewSet for CRUD operations on the Category model."""
-
-    pass
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (DjangoFilterBackend,
+                       filters.SearchFilter,
+                       filters.OrderingFilter)
+    search_fields = ('name',)
+    ordering_fields = ('name', 'year')
+    lookup_field = 'slug'
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
