@@ -34,7 +34,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         """Request Serializer to use."""
-        if self.request.method in ('POST', 'PATCH'):
+        if self.action in ('create', 'update', 'partial_update'):
             return TitleSerializerPost
         return TitleSerializerGet
 
@@ -50,17 +50,19 @@ class GenreViewSet(viewsets.ModelViewSet):
                        filters.OrderingFilter)
     search_fields = ('name',)
     ordering_fields = ('name', 'year')
+    lookup_field = 'slug'
+    http_method_names = ("get", "post", "delete")
 
-    @action(
-        detail=False, methods=['delete'],
-        url_path=r'(?P<slug>\w+)',
-        lookup_field='slug')
-    def get_genre(self, request, slug):
-        """Get Genre func with 204."""
-        genre = self.get_object()
-        serializer = GenreSerializer(genre)
-        genre.delete()
-        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def http_method_not_allowed(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def retrieve(self, request, *args, **kwargs):
+        return self.http_method_not_allowed(request, *args, **kwargs)
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -74,17 +76,19 @@ class CategoryViewSet(viewsets.ModelViewSet):
                        filters.OrderingFilter)
     search_fields = ('name',)
     ordering_fields = ('name', 'year')
+    lookup_field = 'slug'
+    http_method_names = ("get", "post", "delete")
 
-    @action(
-        detail=False, methods=['delete'],
-        url_path=r'(?P<slug>\w+)',
-        lookup_field='slug')
-    def get_category(self, request, slug):
-        """Get Category func with 204."""
-        category = self.get_object()
-        serializer = CategorySerializer(category)
-        category.delete()
-        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def http_method_not_allowed(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def retrieve(self, request, *args, **kwargs):
+        return self.http_method_not_allowed(request, *args, **kwargs)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
