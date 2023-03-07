@@ -39,56 +39,69 @@ class TitleViewSet(viewsets.ModelViewSet):
         return TitleSerializerGet
 
 
-class GenreViewSet(viewsets.ModelViewSet):
-    """A ViewSet for CRUD operations on the Genre model."""
+class ListMixin:
+    """Correspond to the list."""
+
+    queryset = None
+    serializer_class = None
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (DjangoFilterBackend,
+                       filters.SearchFilter,
+                       filters.OrderingFilter)
+    search_fields = ('name',)
+    ordering_fields = ('name', 'year')
+    lookup_field = 'slug'
+    http_method_names = ('get', 'post', 'delete')
+
+
+class DestroyMixin:
+    """Correspond to delete."""
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete an existing instance of the view model associated."""
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class NotAllowedMixin:
+    """Correspond to retreat."""
+
+    def http_method_not_allowed(self, request, *args, **kwargs):
+        """Return a 405 response with no content."""
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def retrieve(self, request, *args, **kwargs):
+        """Return a response with a status of 405."""
+        return self.http_method_not_allowed(request, *args, **kwargs)
+
+
+class GenreListMixin(ListMixin):
+    """Inherit from ListMixin with settings."""
 
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (DjangoFilterBackend,
-                       filters.SearchFilter,
-                       filters.OrderingFilter)
-    search_fields = ('name',)
-    ordering_fields = ('name', 'year')
-    lookup_field = 'slug'
-    http_method_names = ("get", "post", "delete")
-
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        self.perform_destroy(instance)
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-    def http_method_not_allowed(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    def retrieve(self, request, *args, **kwargs):
-        return self.http_method_not_allowed(request, *args, **kwargs)
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
-    """A ViewSet for CRUD operations on the Category model."""
+class GenreViewSet(GenreListMixin, DestroyMixin,
+                   NotAllowedMixin, viewsets.ModelViewSet):
+    """A ViewSet for CRUD operations on the Genre model."""
+
+    pass
+
+
+class CategoryListMixin(ListMixin):
+    """Inherit from ListMixin with settings."""
 
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (DjangoFilterBackend,
-                       filters.SearchFilter,
-                       filters.OrderingFilter)
-    search_fields = ('name',)
-    ordering_fields = ('name', 'year')
-    lookup_field = 'slug'
-    http_method_names = ("get", "post", "delete")
 
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        self.perform_destroy(instance)
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
-    def http_method_not_allowed(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+class CategoryViewSet(CategoryListMixin, DestroyMixin,
+                      NotAllowedMixin, viewsets.ModelViewSet):
+    """A ViewSet for CRUD operations on the Category model."""
 
-    def retrieve(self, request, *args, **kwargs):
-        return self.http_method_not_allowed(request, *args, **kwargs)
+    pass
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
