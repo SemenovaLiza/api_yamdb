@@ -3,7 +3,6 @@ from django.db.models import Avg
 from django.db.models.functions import Round
 from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
-from rest_framework.validators import ValidationError
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.decorators import action, api_view, permission_classes
@@ -158,15 +157,16 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """Custom creation method for Review objects.
         Provides user and title info to the object after uniqueness check."""
-        queryset = Review.objects.filter(
-            title=self.get_title(), author=self.request.user)
-        if queryset.exists():
-            raise ValidationError('Only one review per author is allowed')
         serializer.save(author=self.request.user, title=self.get_title())
 
     def get_queryset(self):
         """Overrided reviews query for getting title-related objects."""
         return self.get_title().reviews.all()
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({'title': self.get_title()})
+        return context
 
 
 class CommentViewSet(viewsets.ModelViewSet):

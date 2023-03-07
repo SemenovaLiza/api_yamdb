@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.validators import ValidationError
 
 from api_yamdb.settings import (USERNAME_MAX_LENGTH, EMAIL_MAX_LENGTH)
 from reviews.models import Title, Category, Genre, CustomUser, Review, Comment
@@ -65,13 +66,21 @@ class ReviewSerializer(serializers.ModelSerializer):
     """A serializer for the Review model that serializes selected fields."""
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username')
-    score = serializers.IntegerField(min_value=1, max_value=10)
 
     class Meta:
 
         model = Review
         fields = ('id', 'text', 'author', 'score', 'pub_date',)
         read_only_fields = ('id', 'author', 'pub_date',)
+
+    def validate(self, data):
+        if self.context['request'].method == 'POST':
+            if Review.objects.filter(
+                    author=self.context['request'].user,
+                    title=self.context['title']).exists():
+
+                raise ValidationError('Only one review per title!')
+        return super().validate(data)
 
 
 class CommentSerializer(serializers.ModelSerializer):
