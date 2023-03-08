@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models.constraints import UniqueConstraint
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import AbstractUser
 
 from api_yamdb.settings import (ADMIN, MODERATOR, USER,
@@ -139,7 +140,10 @@ class Review(models.Model):
         related_name='reviews',
     )
     pub_date = models.DateTimeField(auto_now_add=True)
-    score = models.IntegerField()
+    score = models.PositiveIntegerField(
+        validators=[MinValueValidator(1),
+                    MaxValueValidator(10)]
+    )
     text = models.TextField()
 
     class Meta:
