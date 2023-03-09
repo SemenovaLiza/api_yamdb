@@ -8,7 +8,14 @@ class IsAdminOrReadOnly(permissions.BasePermission):
         """Whether the user has permission to perform the request."""
         return (
             request.method in permissions.SAFE_METHODS
-            or request.user.is_authenticated and request.user.is_admin)
+            or (request.user.is_authenticated and request.user.is_admin)
+        )
+
+    def has_object_permission(self, request, view, obj):
+        return (
+            request.method in permissions.SAFE_METHODS
+            or (request.user.is_authenticated and request.user.is_admin)
+        )
 
 
 class IsAuthor(permissions.BasePermission):

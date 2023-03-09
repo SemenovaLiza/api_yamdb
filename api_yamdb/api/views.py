@@ -7,7 +7,7 @@ from rest_framework.validators import ValidationError
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework import (
-    filters, views, viewsets, status, permissions)
+    filters, views, viewsets, status, permissions, mixins)
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -34,12 +34,16 @@ class TitleViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         """Request Serializer to use."""
-        if self.request.method in ('POST', 'PATCH'):
+        if self.action in ('create', 'update', 'partial_update'):
             return TitleSerializerPost
         return TitleSerializerGet
 
 
-class GenreViewSet(viewsets.ModelViewSet):
+class GenreViewSet(mixins.ListModelMixin,
+                   mixins.CreateModelMixin,
+                   mixins.DestroyModelMixin,
+                   viewsets.GenericViewSet
+                   ):
     """A ViewSet for CRUD operations on the Genre model."""
 
     queryset = Genre.objects.all()
@@ -50,20 +54,13 @@ class GenreViewSet(viewsets.ModelViewSet):
                        filters.OrderingFilter)
     search_fields = ('name',)
     ordering_fields = ('name', 'year')
-
-    @action(
-        detail=False, methods=['delete'],
-        url_path=r'(?P<slug>\w+)',
-        lookup_field='slug')
-    def get_genre(self, request, slug):
-        """Get Genre func with 204."""
-        genre = self.get_object()
-        serializer = GenreSerializer(genre)
-        genre.delete()
-        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+    lookup_field = 'slug'
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
+class CategoryViewSet(mixins.ListModelMixin,
+                      mixins.CreateModelMixin,
+                      mixins.DestroyModelMixin,
+                      viewsets.GenericViewSet):
     """A ViewSet for CRUD operations on the Category model."""
 
     queryset = Category.objects.all()
@@ -74,17 +71,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
                        filters.OrderingFilter)
     search_fields = ('name',)
     ordering_fields = ('name', 'year')
-
-    @action(
-        detail=False, methods=['delete'],
-        url_path=r'(?P<slug>\w+)',
-        lookup_field='slug')
-    def get_category(self, request, slug):
-        """Get Category func with 204."""
-        category = self.get_object()
-        serializer = CategorySerializer(category)
-        category.delete()
-        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+    lookup_field = 'slug'
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
