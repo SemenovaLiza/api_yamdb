@@ -1,11 +1,12 @@
 from django.db import models
 from django.db.models.constraints import UniqueConstraint
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import AbstractUser
 
 from api_yamdb.settings import (ADMIN, MODERATOR, USER,
                                 USERNAME_MAX_LENGTH, EMAIL_MAX_LENGTH,
                                 FIRST_NAME_MAX_LENGTH, LAST_NAME_MAX_LENGTH)
-from api.validators import username_validation
+from api.v1.validators import username_validation
 
 
 class Title(models.Model):
@@ -80,15 +81,13 @@ class GenreTitle(models.Model):
     title = models.ForeignKey('Title', on_delete=models.CASCADE)
 
 
-ROLES = (
+class CustomUser(AbstractUser):
+    """Customized user model with RBAC implemented."""
+    ROLES = (
         (ADMIN, 'Администратор'),
         (MODERATOR, 'Модератор'),
         (USER, 'Пользователь')
-)
-
-
-class CustomUser(AbstractUser):
-    """Customized user model with RBAC implemented."""
+    )
     username = models.CharField(
         max_length=USERNAME_MAX_LENGTH,
         unique=True,
@@ -141,7 +140,10 @@ class Review(models.Model):
         related_name='reviews',
     )
     pub_date = models.DateTimeField(auto_now_add=True)
-    score = models.IntegerField()
+    score = models.PositiveIntegerField(
+        validators=[MinValueValidator(1),
+                    MaxValueValidator(10)]
+    )
     text = models.TextField()
 
     class Meta:

@@ -3,11 +3,11 @@ from django.db.models import Avg
 from django.db.models.functions import Round
 from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
-from rest_framework.validators import ValidationError
 from rest_framework.response import Response
-from rest_framework.decorators import action
+from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework import (
-    filters, views, viewsets, status, permissions, mixins)
+    filters, viewsets, status, permissions, mixins)
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -18,9 +18,49 @@ from .permissions import (IsAdminOrReadOnly, IsAdmin,
                           AuthorOrStaffOrReadOnly)
 from .serializers import (CategorySerializer, GenreSerializer,
                           TitleSerializerGet, TitleSerializerPost,
-                          AdminSerializer, CustomUserSerializer,
+                          EditUserProfileSerializer, CustomUserSerializer,
                           SignUpSerializer, TokenSerializer,
                           ReviewSerializer, CommentSerializer)
+
+
+@api_view(['post'])
+@permission_classes([permissions.AllowAny])
+def signup(request):
+    """A view for creating a new user by sending
+    a confirmation code to the email.
+    """
+    serializer = SignUpSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    username = serializer.validated_data['username']
+    email = serializer.validated_data['email']
+    user, created = CustomUser.objects.get_or_create(
+        username=username, email=email)
+    confirmation_code = default_token_generator.make_token(user)
+    send_mail(
+        subject='YaMbd registration',
+        message=('Confirmation code for registration:'
+                 f'{str(confirmation_code)}'),
+        from_email=None,
+        recipient_list=[email]
+    )
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['post'])
+@permission_classes([permissions.AllowAny])
+def get_token(request):
+    """A view for getting AuthToken with email confirmation code."""
+    serializer = TokenSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    user = get_object_or_404(
+        CustomUser, username=serializer.validated_data['username']
+    )
+    if default_token_generator.check_token(
+        user, serializer.validated_data["confirmation_code"]
+    ):
+        token = AccessToken.for_user(user)
+        return Response({'token': str(token)}, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -87,15 +127,16 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """Custom creation method for Review objects.
         Provides user and title info to the object after uniqueness check."""
-        queryset = Review.objects.filter(
-            title=self.get_title(), author=self.request.user)
-        if queryset.exists():
-            raise ValidationError('Only one review per author is allowed')
         serializer.save(author=self.request.user, title=self.get_title())
 
     def get_queryset(self):
         """Overrided reviews query for getting title-related objects."""
         return self.get_title().reviews.all()
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({'title': self.get_title()})
+        return context
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -121,7 +162,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 class CustomUserViewSet(viewsets.ModelViewSet):
     """A ViewSet for CRUD operations on the CustomUser model."""
     queryset = CustomUser.objects.all()
-    serializer_class = AdminSerializer
+    serializer_class = CustomUserSerializer
     permission_classes = (IsAdmin, )
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
@@ -137,7 +178,7 @@ class CustomUserViewSet(viewsets.ModelViewSet):
     )
     def get_user_profile(self, request):
         """Get user profile info with 200."""
-        serializer = CustomUserSerializer(
+        serializer = EditUserProfileSerializer(
             request.user,
             data=request.data,
             partial=True
@@ -145,45 +186,3 @@ class CustomUserViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-class SignUpView(views.APIView):
-    """A view for creating new CustomUser model."""
-    permission_classes = (permissions.AllowAny,)
-
-    def post(self, request):
-        """Create CustomUser with 200 and send confirmation email."""
-        serializer = SignUpSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        username = serializer.validated_data['username']
-        email = serializer.validated_data['email']
-        user, created = CustomUser.objects.get_or_create(
-            username=username, email=email)
-        confirmation_code = default_token_generator.make_token(user)
-        send_mail(
-            subject='YaMbd registration',
-            message=('Confirmation code for registration:'
-                     f'{str(confirmation_code)}'),
-            from_email=None,
-            recipient_list=[email]
-        )
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-class GetTokenView(views.APIView):
-    """A view for getting AuthToken with email confirmation code."""
-    permission_classes = (permissions.AllowAny,)
-
-    def post(self, request):
-        """Get AuthToken with 200. Response 400 with incorrect data."""
-        serializer = TokenSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = get_object_or_404(
-            CustomUser, username=serializer.validated_data['username']
-        )
-        if default_token_generator.check_token(
-            user, serializer.validated_data["confirmation_code"]
-        ):
-            token = default_token_generator.get_token_for_user(user)
-            return Response({'token': str(token)}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

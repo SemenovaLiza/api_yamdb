@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.validators import ValidationError
 
 from api_yamdb.settings import (USERNAME_MAX_LENGTH, EMAIL_MAX_LENGTH)
 from reviews.models import Title, Category, Genre, CustomUser, Review, Comment
@@ -65,13 +66,21 @@ class ReviewSerializer(serializers.ModelSerializer):
     """A serializer for the Review model that serializes selected fields."""
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username')
-    score = serializers.IntegerField(min_value=1, max_value=10)
 
     class Meta:
 
         model = Review
         fields = ('id', 'text', 'author', 'score', 'pub_date',)
         read_only_fields = ('id', 'author', 'pub_date',)
+
+    def validate(self, data):
+        if self.context['request'].method == 'POST':
+            if Review.objects.filter(
+                    author=self.context['request'].user,
+                    title=self.context['title']).exists():
+
+                raise ValidationError('Only one review per title!')
+        return super().validate(data)
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -88,23 +97,6 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class CustomUserSerializer(serializers.ModelSerializer):
     """A serializer for the CustomUser model that serializes selected fields.
-    Meant for non-admin access to the user list.
-    """
-
-    class Meta:
-
-        fields = (
-            'username', 'email',
-            'role', 'bio',
-            'first_name', 'last_name'
-        )
-        read_only_fields = ('role',)
-        model = CustomUser
-
-
-class AdminSerializer(serializers.ModelSerializer):
-    """A serializer for the CustomUser model that serializes selected fields.
-    Meant for the admin-only access to user roles.
     """
 
     class Meta:
@@ -115,6 +107,13 @@ class AdminSerializer(serializers.ModelSerializer):
             'first_name', 'last_name'
         )
         model = CustomUser
+
+
+class EditUserProfileSerializer(CustomUserSerializer):
+    """Serializer for changing data in the user's profile,
+    except for the user's role.
+    """
+    role = serializers.CharField(read_only=True)
 
 
 class SignUpSerializer(serializers.ModelSerializer):
