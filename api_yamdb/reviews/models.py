@@ -92,27 +92,36 @@ class CustomUser(AbstractUser):
         max_length=USERNAME_MAX_LENGTH,
         unique=True,
         blank=False,
-        validators=[username_validation]
+        validators=[username_validation],
+        verbose_name='Никнейм пользователя'
     )
     email = models.EmailField(
         max_length=EMAIL_MAX_LENGTH,
         unique=True,
-        blank=False
+        blank=False,
+        verbose_name='Почта пользователя'
     )
     role = models.CharField(
         choices=ROLES,
         default=USER,
         max_length=max(len(role[0]) for role in ROLES),
-        blank=True
+        blank=True,
+        verbose_name='Роль пользователя'
     )
-    bio = models.TextField(blank=True, null=True)
+    bio = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name='О пользователе'
+    )
     first_name = models.CharField(
         max_length=FIRST_NAME_MAX_LENGTH,
-        blank=True
+        blank=True,
+        verbose_name='Имя пользователя'
     )
     last_name = models.CharField(
         max_length=LAST_NAME_MAX_LENGTH,
-        blank=True
+        blank=True,
+        verbose_name='Фамилия пользователя'
     )
 
     @property
@@ -126,6 +135,10 @@ class CustomUser(AbstractUser):
     def __str__(self):
         """Represent a string of the CustomUser instance. Returns username."""
         return self.username
+
+    class Meta:
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
 
 
 class Review(models.Model):
