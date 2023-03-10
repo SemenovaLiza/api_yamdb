@@ -134,11 +134,6 @@ class ReviewViewSet(viewsets.ModelViewSet):
         """Overrided reviews query for getting title-related objects."""
         return self.get_title().reviews.all()
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context.update({'title': self.get_title()})
-        return context
-
 
 class CommentViewSet(viewsets.ModelViewSet):
     """A ViewSet for CRUD operations on the Comment model."""
@@ -148,7 +143,8 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def get_review(self):
         """Instrumental method for accessing Review object from the request."""
-        return get_object_or_404(Review, pk=self.kwargs['review_id'])
+        return get_object_or_404(Review, pk=self.kwargs['review_id'],
+                                 title__id=self.kwargs['title_id'])
 
     def perform_create(self, serializer):
         """Custom creation method for Comment objects.
