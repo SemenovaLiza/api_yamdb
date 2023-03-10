@@ -134,20 +134,24 @@ class Review(models.Model):
         CustomUser,
         on_delete=models.CASCADE,
         related_name='reviews',
+        verbose_name='Автор'
     )
     title = models.ForeignKey(
         Title, on_delete=models.CASCADE,
         related_name='reviews',
+        verbose_name='Медиаконтент'
     )
-    pub_date = models.DateTimeField(auto_now_add=True)
+    pub_date = models.DateTimeField(auto_now_add=True,
+                                    verbose_name='Дата публикации')
     score = models.PositiveIntegerField(
+        verbose_name='Оценка',
         validators=[MinValueValidator(1),
                     MaxValueValidator(10)]
     )
-    text = models.TextField()
+    text = models.TextField(verbose_name='Текст')
 
     class Meta:
-
+        verbose_name = 'Отзыв'
         constraints = [UniqueConstraint(
             fields=['title', 'author'], name='unique_reviews')]
 
@@ -158,11 +162,15 @@ class Review(models.Model):
 
 class Comment(models.Model):
     """The Comment model represents a user comments on review objects."""
-    text = models.TextField()
+    text = models.TextField(verbose_name='Текст комментария')
     author = models.ForeignKey(
         CustomUser, on_delete=models.CASCADE,
-        related_name='comments'
+        related_name='comments', verbose_name='Автор комментария'
     )
-    pub_date = models.DateTimeField(auto_now_add=True)
+    pub_date = models.DateTimeField(auto_now_add=True,
+                                    verbose_name='Дата публикации комментария')
     review = models.ForeignKey(Review, on_delete=models.CASCADE,
-                               related_name='comments')
+                               related_name='comments', verbose_name='Отзыв')
+
+    class Meta:
+        verbose_name = 'Комментарий'
