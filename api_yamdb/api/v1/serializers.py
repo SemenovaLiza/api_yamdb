@@ -116,7 +116,7 @@ class EditUserProfileSerializer(CustomUserSerializer):
     role = serializers.CharField(read_only=True)
 
 
-class SignUpSerializer(serializers.ModelSerializer):
+class SignUpSerializer(serializers.Serializer):
     """A serializer for the CustomUser model that serializes selected fields.
     Specifically meant for creating signing up new user.
     """
@@ -146,11 +146,6 @@ class SignUpSerializer(serializers.ModelSerializer):
                 )
 
         return data
-
-    class Meta:
-
-        fields = ('username', 'email')
-        model = CustomUser
 
 
 class TokenSerializer(serializers.Serializer):

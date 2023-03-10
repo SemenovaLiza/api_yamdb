@@ -13,6 +13,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from reviews.models import (Category, Genre, Title,
                             CustomUser, Review)
+from api_yamdb import settings
 from .filters import TitleFilter
 from .permissions import (IsAdminOrReadOnly, IsAdmin,
                           AuthorOrStaffOrReadOnly)
@@ -40,7 +41,7 @@ def signup(request):
         subject='YaMbd registration',
         message=('Confirmation code for registration:'
                  f'{str(confirmation_code)}'),
-        from_email=None,
+        from_email=settings.FROM_EMAIL,
         recipient_list=[email]
     )
     return Response(serializer.data, status=status.HTTP_200_OK)
